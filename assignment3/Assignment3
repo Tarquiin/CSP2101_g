@@ -1,0 +1,266 @@
+#!/bin/bash
+#Student: Tarquin Bick  Student_ID: 10480106
+
+#Funtions
+Protocol() {        #Function to gather user input for Protocol search
+    while true;do
+        read -p "Enter (1) for TCP, (2) for ICMP, (3) for UDP or (4) for GRE." Prot
+        if [[ $Prot -ge 1 && $Prot -le 4 ]]; then
+            if [ $Prot -eq 1 ];then     #These if/elif statements stores the relevant conditional awk statement needed
+            protsch='$3~/TCP/'
+            elif [ $Prot -eq 2 ];then
+            protsch='$3~/ICMP/'
+            elif [ $Prot -eq 3 ];then
+            protsch='$3~/UDP/'
+            elif [ $Prot -eq 4 ];then
+            protsch='$3~/GRE/'
+            fi
+            echo "$protsch"
+            break
+        else
+            echo 'try again'
+        fi
+    done 
+}
+SrcIP() {       #Function to gather user input for SrcIP search
+    while true;do
+        read -p "Enter a source IP text to search for:" srciptxt
+        if [[ ! -z $srciptxt ]];then
+            srcipsch='$4~/'
+            srcipsch+="$srciptxt"
+            srcipsch+='/'           #Stores conditional awk statement to be used   
+            echo "$srcipsch"             
+            break
+        else
+            echo "You have not entered anything, please try again"
+        fi
+    done 
+}
+
+SrcPort() {     #Function to gather user input for SrcPort search
+    while true;do
+        read -p "Enter a source port number to be searched for:" srcportnum
+        if [[ $srcportnum =~ ^[0-9]+$ && ! -z srcportnum ]]; then
+            srcportsch='$5~/'
+            srcportsch+="$srcportnum"
+            srcportsch+='/'      #Stores conditional awk statement to be used
+            echo "$srcportnum"
+            break
+        else
+            echo "You have not entered a valid port number, please try again"
+        fi
+    done 
+}
+
+DestIP() {      #Function to gather user input for DestIP search
+    while true;do
+        read -p "Enter a destination IP text to search for:" destiptxt
+        if [[ ! -z $destiptxt ]];then
+            destipsch='$6~/'
+            destipsch+="$destiptxt"
+            destipsch+='/'
+            echo "$destipsch"                #Stores conditional awk statement to be used
+            break
+        else
+            echo "You have not entered anything, please try again"
+        fi
+    done 
+}
+
+DestPort() {        #Function to gather user input for DestPort search
+    while true;do
+        read -p "Enter a destination port number to be searched for:" destportnum
+        if [[ $destportnum =~ ^[0-9]+$ && ! -z $destportnum ]]; then
+            destportsch='$7~/'
+            destportsch+="$destportnum"
+            destportsch+='/'   #Stores conditional awk statement to be used
+            echo "$destportsch"
+            break
+        else
+            echo "You have not entered a valid port number, please try again"
+        fi
+    done 
+}
+
+Packets() {             #Function to gather user input for Packets search   
+    while true;do
+        read -p "Enter a number for Packets to be searched for:" packetnum
+        if [[ $packetnum =~ ^[0-9]+$ && ! -z $packetnum ]]; then
+            read -p "Enter one of these for the Packets search: (1) for greater than, (2) for less than, (3) for equal to or (4) for not equal to." packetop      #For choosing additional options
+            if [[ $packetop -ge 1 && $packetop -le 4 ]]; then
+                if [ $packetop -eq 1 ];then       #These if/elif statements stores the relevant conditional awk statement needed
+                    packetsch='$8>$packetnum'
+                elif [ $packetop -eq 2 ];then
+                    packetsch='$8<$packetnum'
+                elif [ $packetop -eq 3 ];then
+                    packetsch='$8=$packetnum'
+                elif [ $packetop -eq 4 ];then
+                    packetsch='$8!=$packetnum'
+                fi
+                echo "$packetsch"
+                break
+            else
+                echo "Incorrect input, try again"
+            fi
+        else
+            echo "You have not entered a valid number, please try again"
+        fi
+    done
+
+}
+
+Bytes() {           #Function to gather user input for Byte search            
+    while true;do
+        read -p "Enter a number for Bytes to be searched for:" bytenum
+        if [[ $bytenum =~ ^[0-9]+$ && ! -z $bytenum ]]; then
+            read -p "Enter one of these for the Bytes search: (1) for greater than, (2) for less than, (3) for equal to or (4) for not equal to." byteop       #For choosing additional options
+            if [[ $byteop -ge 1 && $byteop -le 4 ]]; then
+                if [ $byteop -eq 1 ];then       #These if/elif statements stores the relevant conditional awk statement needed
+                    bytesch='$9>$bytenum'
+                elif [ $byteop -eq 2 ];then
+                    bytesch='$9<$bytenum'
+                elif [ $byteop -eq 3 ];then
+                    bytesch='$9=$bytenum'
+                elif [ $byteop -eq 4 ];then
+                    bytesch='$9!=$bytenum'
+                fi
+                echo "$bytesch"
+                break
+            else
+                echo "Incorrect input, try again"
+            fi
+        else
+            echo "You have not entered a valid number, please try again"
+        fi
+    done
+}
+Search1(){
+    cat temp.csv | awk '{FS=",";}NR>1 {IGNORECASE=1 
+                                    if('"$1"')
+                                    {
+                                        printf $1"\t\t"$2"\t\t"$3"\t\t"$4"\t\t"$5"\t\t"$6"\t\t"$7"\t\t"$8"\t\t"$9"\n"
+                                    }
+                                    }'
+}
+
+Search2(){
+    cat temp.csv | awk '{FS="," ;}NR>1 {IGNORECASE=1 
+                            if('"$1&&$2"')
+                            {
+                                printf $1"\t\t"$2"\t\t"$3"\t\t"$4"\t""\t"$5"\t""\t"$6"\t""\t"$7"\t""\t"$8"\t""\t"$9"\n"
+                            }
+                            }'
+}
+
+
+Search3(){
+    cat temp.csv | awk '{FS="," ;}NR>1 {IGNORECASE=1 
+                                    if('"$1&&$2&&$3"')
+                                    {
+                                        printf $1"\t\t"$2"\t\t"$3"\t\t"$4"\t""\t"$5"\t""\t"$6"\t""\t"$7"\t""\t"$8"\t""\t"$9"\n"
+                                    }
+                                    }' 
+}
+
+Functions=(Protocol SrcIP SrcPort DestIP DestPort Packets Bytes)     #Array to call for using functions when selected according to their index number
+awksearch=($protsch $srcipsch $srcportsch $destipsch $destportsch $packetsch $bytesch) #Array to call for using stored functions awk statements
+declare -a logs                         #Create empty array for storing log files
+pattern="serv_acc_log.+csv$"            #Pattern to search throgh directory for
+
+for log in ./*; do                      #Looping through directory for files that match the given pattern
+    if [[ $log =~ $pattern ]];then
+        logs+=($(basename $log))
+    fi
+done
+
+logcount=${#logs[*]}                    #Count  number of logs in dir
+optarray=("Protocol" "SrcIP" "SrcPort" "DestIP" "DestPort" "Packets" "Bytes")   #To be used for choosing menu options
+echo -e "Folder contains $logcount logs.\n"
+
+while true;do       #Main script WHILE loo
+    read -p "Enter a 1 to seach a specific log or 2 to search all:" opt
+    for ((i=1; i<=2; i++)); do   ##Loops while array has less than 3 chosen options
+        echo -e "0)\tProtocol\n1)\tSrcIP\n2)\tSrcPort\n3)\tDestIP\n4)\tDestPort\n5)\tPackets\n6)\tBytes"
+        read -p "Please select a number from the options above to search for(MAX 3): " schchoice
+        if [[ $schchoice =~ ^[0-9]+$ && $schchoice -ge 0 && $schchoice -le 6 ]];then #ensures a valid search input
+            srcharray+=($schchoice)         #Creates new array to store choices
+            echo "You have chosen ${optarray[$schchoice]} to search for"    #Displays chosen option                          
+            read -p "Would you like to search an additional paramenter (MAX 3)? Enter 1 for YES or any button for NO" morechoice
+            if [[ $morechoice -eq 1 ]];then
+                continue
+            else
+                break
+            fi                               
+        else
+            echo "Invalid input, please try again"  
+        fi                
+    done            
+    
+    case $opt in    #Use Case statements for different search options
+        1)  #specific log
+        menop=0
+        for log in "${logs[@]}";do      #Displays all logs and a number next to them for selection
+            echo -e "$menop $log"
+            ((menop++))
+        done
+        read -p "Please enter the number of the log you would like to search in:" singleopt
+        echo "You have chosen to search log: ${logs[$singleopt]}"
+        len=${#srcharray[@]}
+        for ((i=0; i<$len; i++)); do            
+            ${Functions[${srcharray[$i]}]}
+        done
+       
+        schvar1=${awksearch[${srcharray[0]}]}       #Variables thats stores locations of awksearches to be used for searching
+        schvar2=${awksearch[${srcharray[1]}]}
+        schvar3=${awksearch[${srcharray[2]}]}
+        
+        if [[ ${#srcharray[@]} -eq 1 ]];then            #Single search
+            cat ${logs[$singleopt]} | grep -e "suspicious" > temp.csv
+            Search1 $schvar1 #< temp.csv > SingleSearchResults.csv | cat SingleSearchResults.csv
+
+        elif [[ ${#srcharray[@]} -eq 2 ]];then          #Double search
+            cat ${logs[$singleopt]} | grep -e "suspicious" > temp.csv
+            Search2 $schvar1 $schvar2 > SingleSearchResults.csv  | cat SingleSearchResults.csv
+                        
+        elif [[ ${#srcharray[@]} -eq 3 ]];then          #Triple search
+            cat ${logs[$singleopt]} | grep -e "suspicious" > temp.csv
+            Search3 $schvar1 $schvar2 $schvar3 > SingleSearchResults.csv | cat SingleSearchResults/csv                      
+        fi  
+        
+        ;;
+    
+        2)  #all logs
+        for i in ${srcharray[@]};do           #Calls selected seach functions in order to gather and store user parameters for awk
+            ${Functions[$func]}
+        done
+        for log in ${logs[@]};do        #Loops through all logs in dir and applies searches to each
+            schvar1=${Functions[${srcharray[0]}]}
+            schvar2=${awksearch[${srcharray[1]}]}
+            schvar3=${awksearch[${srcharray[2]}]}
+            
+            if [[ ${#srcharray[@]} -eq 1 ]];then
+            cat ${logs[@]} | grep -e "suspicious" > temp.csv
+            Search1 $schvar1 < temp.csv > EntireSearchResults.csv | cat EntireSearchResults.csv
+
+            elif [[ ${#srcharray[@]} -eq 2 ]];then
+            cat ${logs[@]} | grep -e "suspicious" > temp.csv
+            Search2 $schvar1 $schvar2 < temp.csv > EntireSearchResults.csv | cat EntireSearchResults.csv
+
+            elif [[ ${#srcharray[@]} -eq 3 ]];then
+            cat ${logs[@]} | grep -e "suspicious" > temp.csv
+            Search3 $schvar1 $schvar2 $schvar3 < temp.csv > EntireSearchResults.csv | cat EntireSearchResults.csv                                            
+            fi                  
+        done         
+        ;;
+        *) echo "Invalid selection";;   #Display invalid selection for an incorrect menu choice   
+    esac
+    unset srcharray     #reset search array to null
+    read -p "If you would like to search again, please enter 1. To exit, enter any key." exchoice        #Gives the user a choice of exiting
+    if [[ $exchoice -eq 1 ]];then
+        continue
+    else
+        echo "Good-bye!"
+        break           #breaks the main while loop in order to exit.
+    fi
+done
+exit 0
